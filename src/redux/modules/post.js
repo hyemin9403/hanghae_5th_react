@@ -1,6 +1,7 @@
 import { createAction, handleActions } from "redux-actions";
 import { produce } from "immer";
 import { firestore, storage } from "../../shared/firebase";
+import { doc, deleteDoc, getDocs } from "firebase/firestore";
 import "moment";
 import moment from "moment";
 
@@ -11,6 +12,8 @@ const SET_POST = "SET_POST";
 const ADD_POST = "ADD_POST";
 const LOADING = "LOADING";
 
+const DELETE_POST = "DELETE_POST";
+
 // Action
 const setPost = createAction(SET_POST, (post_list, paging) => ({
   post_list,
@@ -18,6 +21,8 @@ const setPost = createAction(SET_POST, (post_list, paging) => ({
 }));
 const addPost = createAction(ADD_POST, (post) => ({ post }));
 const loading = createAction(LOADING, (is_loading) => ({ is_loading }));
+
+const deletePost = createAction(DELETE_POST, (post) => ({ post }));
 
 // Initial state
 const initialState = {
@@ -35,6 +40,30 @@ const initialPost = {
   comment_cnt: 0,
   // insert_dt: "2021-02-27 10:00:00",
   insert_dt: moment().format("YYYY-MM-DD hh:mm:ss"),
+};
+
+const deletePostFB = (doc_id) => {
+  // 문서를 삭제하려면 delete() 메서드를 사용(특정 필드를 삭제하려면 문서를 업데이트할 때 FieldValue.delete() 메서드를 사용)
+  // await deleteDoc(doc(db, "cities", "DC"));
+
+  // 1. doc_id를 불러온다. (성공)
+  // 3. 삭제
+  return async function (dispatch, getState, { history }) {
+    // 2. delete() 메서드를 위해 경로세팅
+    const postDB = firestore.collection("post");
+    // console.log("post_data임", post_data);
+
+    postDB
+      .doc(doc_id)
+      .delete()
+      .then(() => {
+        dispatch(deletePost(doc_id));
+        console.log("Document successfully deleted!");
+      })
+      .catch((error) => {
+        console.error("Error removing document: ", error);
+      });
+  };
 };
 
 const addPostFB = (contents = "") => {
@@ -161,7 +190,7 @@ const getPostFB = (start = null, size = 3) => {
   };
 };
 
-// Redycer
+// Reducer
 export default handleActions(
   {
     [SET_POST]: (state, action) =>
@@ -178,6 +207,12 @@ export default handleActions(
       produce(state, (draft) => {
         draft.is_loading = action.payload.is_loading;
       }),
+    [DELETE_POST]: (state, action) =>
+      produce(state, (draft) => {
+        // console.log("POST DELETE REDUCER임", state, draft, action);
+        window.alert("삭제 완료되었습니다!");
+        window.location.reload();
+      }),
   },
 
   initialState
@@ -186,8 +221,10 @@ export default handleActions(
 const actionCreators = {
   setPost,
   addPost,
+  deletePost,
   getPostFB,
   addPostFB,
+  deletePostFB,
 };
 
 export { actionCreators };

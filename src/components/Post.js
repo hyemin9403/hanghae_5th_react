@@ -4,8 +4,13 @@ import React from "react";
 // import Text from "../elements/Text";
 
 import { Grid, Image, Text, Button } from "../elements";
+import { actionCreators as postActions } from "../redux/modules/post";
+import { useSelector, useDispatch } from "react-redux";
 
 const Post = (props) => {
+  console.log(props);
+  const dispatch = useDispatch();
+
   return (
     <React.Fragment>
       <Grid>
@@ -28,9 +33,12 @@ const Post = (props) => {
         <Grid padding="16px">
           <Text bold>댓글 {props.comment_cnt}개</Text>
         </Grid>
-        {/* <Grid padding="16px">
-          <Button text={"삭제"} _onClick={() => {}}></Button>
-        </Grid> */}
+        <Grid padding="16px">
+          <Button
+            text={"삭제"}
+            _onClick={() => dispatch(postActions.deletePostFB(props.id))}
+          ></Button>
+        </Grid>
       </Grid>
     </React.Fragment>
   );
